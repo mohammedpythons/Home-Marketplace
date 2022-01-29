@@ -5,19 +5,21 @@ import Offers from "./pages/Offers";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import Signin from "./pages/Signin";
+import Navbar from "./components/Navbar";
 
 function App() {
   return (
     <div className="App">
       <Router>
         <Routes>
+          <Route path="/" element={<Explore />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
-          <Route path="/explore" element={<Explore />} />
           <Route path="/offers" element={<Offers />} />
           <Route path="/forgotpassword" element={<ForgotPassword />} />
           <Route path="/profile" element={<Signin />} />
         </Routes>
+        <Navbar />
       </Router>
     </div>
   );
