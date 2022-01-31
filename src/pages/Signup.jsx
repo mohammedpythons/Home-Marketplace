@@ -10,6 +10,7 @@ import {
 import {doc, setDoc, serverTimestamp} from 'firebase/firestore'
 import { db } from "../firebase.config";
 import {toast} from 'react-toastify';
+import Oauth from "../components/Oauth";
 
 
 const Signup = () => {
@@ -104,7 +105,7 @@ const Signup = () => {
             </div>
           </div>
         </form>
-        {/* Google Auth */}
+        <Oauth />
 
         <Link to="/signin" className="registerLink">
           Already have an account? Sing in
