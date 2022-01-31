@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {getAuth, signInWithEmailAndPassword} from 'firebase/auth'
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
+import {toast} from 'react-toastify';
+
 
 const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,14 +13,26 @@ const Signin = () => {
     password: "",
   });
 
+  const navigate = useNavigate();
+
   const { email, password } = formData;
   const onchange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   };
-const onsubmit = (e) => {
+const onsubmit = async (e) => {
   e.preventDefault()
-  console.log(formData);
+  try {
+    const auth = getAuth();
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+    if (userCredential.user) {
+      navigate("/");
+    }
+  } catch (err) {
+    toast.error("Bad User Credentials!")
+  }
+
 }
   return (
     <>
@@ -44,7 +59,7 @@ const onsubmit = (e) => {
               onChange={onchange}
               placeholder="Password"
             />
-            <img src={visibilityIcon} alt="visibility-icon" className="showPassword" onClick={() => {
+            <img src={visibilityIcon} alt="current-password" className="showPassword" onClick={() => {
               setShowPassword(prev => !prev)
             }} />
             <Link to='/forgotpassword' className="forgotPasswordLink">Forgot Password</Link>
