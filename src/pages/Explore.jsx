@@ -13,13 +13,13 @@ const Explore = () => {
       {/* sliders */}
       <p className="exploreCategoryHeading">Categories</p>
       <div className="exploreCategories">
-        <Link to='/category/sell'>
+        <Link to='/category/rent'>
           <img src={rentCategoryImage} alt="rentimage" className='exploreCategoryImg' />
         <p className="exploreCategoryName">Places for Rent</p>
         </Link>
-        <Link to='/category/sell'>
+        <Link to='/category/sale'>
           <img src={sellCategoryImage} alt="sellimage" className='exploreCategoryImg' />
-          <p className="exploreCategoryName">Places for Sell</p>
+          <p className="exploreCategoryName">Places for Sale</p>
         </Link>
       </div>
     </main>
