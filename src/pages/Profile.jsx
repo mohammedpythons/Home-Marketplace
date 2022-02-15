@@ -1,19 +1,20 @@
 import React, { useState} from "react";
-import { useNavigate} from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import { getAuth, updateProfile } from "firebase/auth";
 import { updateDoc, doc } from "firebase/firestore";
 import {db} from '../firebase.config';
 import {toast} from "react-toastify";
+import arrowRight from '../assets/svg/keyboardArrowRightIcon.svg';
+import homeIcon from '../assets/svg/homeIcon.svg';
 
 const Profile = () => {
   const auth = getAuth();
   const [changeDetails, setChangeDetails] = useState(false);
   const [formData, setFormData] = useState({
-    name: auth.currentUser.displayName,
-    email: auth.currentUser.email,
+    name: auth.currentUser.displayName
   });
 
-  const { name, email } = formData;
+  const { name } = formData;
   const navigate = useNavigate();
   const onLogout = (e) => {
     e.preventDefault();
@@ -85,6 +86,11 @@ const Profile = () => {
 
           </form>
         </div>
+        <Link to='/create-listing' className="createListing">
+          <img src={homeIcon} alt="home" />
+          <p>sell or rent your home</p>
+          <img src={arrowRight} alt="arrow" />
+        </Link>
       </main>
     </div>
   );
