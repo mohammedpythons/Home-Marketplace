@@ -39,9 +39,9 @@ const Signup = () => {
         password
       );
 
-      console.log("this is userCredential", userCredential)
+
       const user = userCredential.user
-      console.log("this is user",user)
+
       updateProfile(auth.currentUser, {
         displayName: name
       })
