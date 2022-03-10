@@ -1,21 +1,62 @@
-import React, { useState} from "react";
-import { Link, useNavigate} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { getAuth, updateProfile } from "firebase/auth";
-import { updateDoc, doc } from "firebase/firestore";
-import {db} from '../firebase.config';
-import {toast} from "react-toastify";
-import arrowRight from '../assets/svg/keyboardArrowRightIcon.svg';
-import homeIcon from '../assets/svg/homeIcon.svg';
+import {
+  updateDoc,
+  doc,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  where,
+  deleteDoc
+} from "firebase/firestore";
+import { db } from "../firebase.config";
+import { toast } from "react-toastify";
+import arrowRight from "../assets/svg/keyboardArrowRightIcon.svg";
+import homeIcon from "../assets/svg/homeIcon.svg";
+import ListingItem from '../components/ListingItem'
+
 
 const Profile = () => {
   const auth = getAuth();
   const [changeDetails, setChangeDetails] = useState(false);
   const [formData, setFormData] = useState({
-    name: auth.currentUser.displayName
+    name: auth.currentUser.displayName,
   });
+
+  const [listings, setListings] = useState();
+  const [loading, setLoading] = useState(true)
 
   const { name } = formData;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserListigs = async () => {
+      const listingsRef = collection(db, "listings");
+      const q = query(
+        listingsRef,
+        where("userRef", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc")
+      );
+      const querySnap = await getDocs(q);
+
+      let listings = []
+
+      querySnap.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data()
+        })
+      })
+
+      setListings(listings)
+      setLoading(false)
+
+    };
+    fetchUserListigs();
+  }, [auth.currentUser.uid]);
+
   const onLogout = (e) => {
     e.preventDefault();
     auth.signOut();
@@ -23,25 +64,22 @@ const Profile = () => {
   };
 
   //on submit update the data base;
-  const onSubmit = async() => {
+  const onSubmit = async () => {
     try {
       if (auth.currentUser.displayName !== name) {
         //update the name in fb
         await updateProfile(auth.currentUser, {
-          displayName: name
-        })
+          displayName: name,
+        });
         //update a doc in firbaseStore
-        const userRef = doc(db, 'users' , auth.currentUser.uid);
+        const userRef = doc(db, "users", auth.currentUser.uid);
         await updateDoc(userRef, {
-          name
-        })
-
+          name,
+        });
       }
-
     } catch (err) {
-      toast.error("Oops! something went wrong please try again")
+      toast.error("Oops! something went wrong please try again");
     }
-
   };
 
   //update the formData object
@@ -49,6 +87,16 @@ const Profile = () => {
   const onChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
+
+// OnDelete function to delete a specific user by id
+const onDelete = async (listingId) =>{
+    if (window.confirm("Are you sure you want to delete?")) {
+      await deleteDoc(doc(db, "listings", listingId));
+      const updatingListing = listings.filter((listing) => listing.id !== listingId);
+      setListings(updatingListing);
+      toast.success("Deleted successfully!")
+    }
+}
 
   return (
     <div className="profile">
@@ -82,15 +130,26 @@ const Profile = () => {
               value={name}
               onChange={onChange}
             />
-
-
           </form>
         </div>
-        <Link to='/create-listing' className="createListing">
+        <Link to="/create-listing" className="createListing">
           <img src={homeIcon} alt="home" />
           <p>sell or rent your home</p>
           <img src={arrowRight} alt="arrow" />
         </Link>
+
+        {!loading && listings?.length > 0 && (
+          <>
+          <p className="lsitingText">Your Listings</p>
+          <ul className="listingsList">
+            {listings.map((listing) => (
+
+              <ListingItem key={listing.id}  id={listing.id} listing={listing.data} onDelete={() => onDelete(listing.id)} />
+
+            ))}
+            </ul>
+          </>
+        )}
       </main>
     </div>
   );
