@@ -17,6 +17,7 @@ import ListingItem from "../components/ListingItem";
 const Offers = () => {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastFetchedListing, setLastfetchedListing] = useState(null)
 
 
   useEffect(() => {
@@ -34,6 +35,8 @@ const Offers = () => {
         );
         // Execute query
         const querySnapp = await getDocs(q)
+        const lastVisiable = querySnapp.docs[querySnapp.docs.length -1];
+        setLastfetchedListing(lastVisiable);
        const listings = [];
        querySnapp.forEach((doc) => {
            return listings.push({id: doc.id, data: doc.data()})
@@ -47,7 +50,34 @@ const Offers = () => {
     fetchListing();
   }, []);
 
+  // pagination / load more
+  const onFetchMoreListings = async () => {
+    try {
+      // Get reference
+      const listingRef = collection(db, "listings");
 
+      // Create a query
+      const q = query(
+        listingRef,
+        where("offer", "==", true),
+        orderBy("timestamp", "desc"),
+        startAfter(lastFetchedListing),
+        limit(10)
+      );
+      // Execute query
+      const querySnapp = await getDocs(q)
+      const lastVisiable = querySnapp.docs[querySnapp.docs.length -1];
+      setLastfetchedListing(lastVisiable);
+     const listings = [];
+     querySnapp.forEach((doc) => {
+         return listings.push({id: doc.id, data: doc.data()})
+     })
+     setListings((prev) => [...prev, ...listings]);
+     setLoading(false);
+    } catch (ere) {
+        toast.error("Something wnet wrong!")
+    }
+  };
   return <div className="category">
       <header>
          {listings && listings.length > 0 && <p className="pageHeader">
@@ -62,6 +92,9 @@ const Offers = () => {
                 ))}
             </ul>
         </main>
+        {lastFetchedListing ? (
+          <p className="loadMore" onClick={onFetchMoreListings}>Load More</p>
+        ): <p className="loadMore">Cant find a list</p>}
        </>: <p> No listigns yet!</p> }
   </div>;
 };

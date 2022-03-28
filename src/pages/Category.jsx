@@ -17,6 +17,7 @@ import ListingItem from "../components/ListingItem";
 const Category = () => {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastFetchedListing, setLastfetchedListing] = useState(null)
   const { categoryName } = useParams();
 
   useEffect(() => {
@@ -33,7 +34,11 @@ const Category = () => {
           limit(10)
         );
         // Execute query
-        const querySnapp = await getDocs(q)
+        const querySnapp = await getDocs(q);
+        const lastVisiable = querySnapp.docs[querySnapp.docs.length -1];
+        setLastfetchedListing(lastVisiable);
+
+
        const listings = [];
        querySnapp.forEach((doc) => {
            return listings.push({id: doc.id, data: doc.data()})
@@ -47,6 +52,36 @@ const Category = () => {
     fetchListing();
   }, []);
 
+// pagination / load more
+  const onFetchMoreListings = async () => {
+    try {
+      // Get reference
+      const listingRef = collection(db, "listings");
+
+      // Create a query
+      const q = query(
+        listingRef,
+        where("type", "==", categoryName),
+        orderBy("timestamp", "desc"),
+        startAfter(lastFetchedListing),
+        limit(10)
+      );
+      // Execute query
+      const querySnapp = await getDocs(q);
+      const lastVisiable = querySnapp.docs[querySnapp.docs.length -1];
+      setLastfetchedListing(lastVisiable);
+
+
+     const listings = [];
+     querySnapp.forEach((doc) => {
+         return listings.push({id: doc.id, data: doc.data()})
+     })
+     setListings((prev) => [...prev, ...listings])
+     setLoading(false);
+    } catch (ere) {
+        toast.error("Something wnet wrong!")
+    }
+  };
 
   return <div className="category">
       <header>
@@ -62,6 +97,12 @@ const Category = () => {
                 ))}
             </ul>
         </main>
+        <br />
+        <br />
+        {lastFetchedListing? (
+          <p className="loadMore" onClick={onFetchMoreListings}>Load More</p>
+        ): <p className="loadMore">Cant find a list</p>}
+
        </>: <p> No listigns for {categoryName}</p> }
   </div>;
 };
