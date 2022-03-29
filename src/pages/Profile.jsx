@@ -9,14 +9,13 @@ import {
   query,
   orderBy,
   where,
-  deleteDoc
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
 import arrowRight from "../assets/svg/keyboardArrowRightIcon.svg";
 import homeIcon from "../assets/svg/homeIcon.svg";
-import ListingItem from '../components/ListingItem'
-
+import ListingItem from "../components/ListingItem";
 
 const Profile = () => {
   const auth = getAuth();
@@ -26,7 +25,7 @@ const Profile = () => {
   });
 
   const [listings, setListings] = useState();
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   const { name } = formData;
   const navigate = useNavigate();
@@ -41,18 +40,17 @@ const Profile = () => {
       );
       const querySnap = await getDocs(q);
 
-      let listings = []
+      let listings = [];
 
       querySnap.forEach((doc) => {
         return listings.push({
           id: doc.id,
-          data: doc.data()
-        })
-      })
+          data: doc.data(),
+        });
+      });
 
-      setListings(listings)
-      setLoading(false)
-
+      setListings(listings);
+      setLoading(false);
     };
     fetchUserListigs();
   }, [auth.currentUser.uid]);
@@ -88,16 +86,20 @@ const Profile = () => {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-// OnDelete function to delete a specific user by id
-const onDelete = async (listingId) =>{
+  // OnDelete function to delete a specific user by id
+  const onDelete = async (listingId) => {
     if (window.confirm("Are you sure you want to delete?")) {
       await deleteDoc(doc(db, "listings", listingId));
-      const updatingListing = listings.filter((listing) => listing.id !== listingId);
+      const updatingListing = listings.filter(
+        (listing) => listing.id !== listingId
+      );
       setListings(updatingListing);
-      toast.success("Deleted successfully!")
+      toast.success("Deleted successfully!");
     }
+  };
+const onEdit = async(listingId) => {
+  navigate(`/edit-listing/${listingId}`);
 }
-
   return (
     <div className="profile">
       <header className="profileHeader">
@@ -140,13 +142,17 @@ const onDelete = async (listingId) =>{
 
         {!loading && listings?.length > 0 && (
           <>
-          <p className="lsitingText">Your Listings</p>
-          <ul className="listingsList">
-            {listings.map((listing) => (
-
-              <ListingItem key={listing.id}  id={listing.id} listing={listing.data} onDelete={() => onDelete(listing.id)} />
-
-            ))}
+            <p className="lsitingText">Your Listings</p>
+            <ul className="listingsList">
+              {listings.map((listing) => (
+                <ListingItem
+                  key={listing.id}
+                  id={listing.id}
+                  listing={listing.data}
+                  onDelete={() => onDelete(listing.id)}
+                  onEdit={() => onEdit(listing.id)}
+                />
+              ))}
             </ul>
           </>
         )}
